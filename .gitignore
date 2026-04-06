@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.h5
+*.pkl
+*.pickle
+*.mp4
+*.avi
+*.mov
+kaggle.json
+dataset/
+uploads/
+test_samples/
+models/
+*.log
+.env

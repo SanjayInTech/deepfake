@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepfake Detection Engine</title>
+    <!-- Elegant Serif for Headers, Clean Sans-Serif for body -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #041223; /* Deep navy from the image */
+            --text-main: #FFFFFF;
+            --text-muted: #A0B0C4;
+            --glow-1: #00CEC9; /* Teal glow */
+            --glow-2: #81ECEC; /* Light blue glow */
+            --glow-3: #10B981; /* Green glow */
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Abstract glowing auroras in the background */
+        .glow-orb-1 {
+            position: fixed;
+            top: -10%;
+            left: 30%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0,206,201,0.3) 0%, rgba(4,18,35,0) 70%);
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            animation: float 10s infinite alternate;
+        }
+
+        .glow-orb-2 {
+            position: fixed;
+            bottom: -15%;
+            right: 10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(16,185,129,0.2) 0%, rgba(4,18,35,0) 70%);
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            animation: float 12s infinite alternate-reverse;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) scale(1); }
+            100% { transform: translateY(30px) scale(1.1); }
+        }
+
+        .wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Hero Text Area */
+        .hero {
+            text-align: center;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+
+        /* Adds a concentrated glow behind the main title like in the reference */
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 150px;
+            background: rgba(129, 236, 236, 0.15);
+            filter: blur(60px);
+            z-index: -1;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 500;
+            line-height: 1.1;
+            margin: 0 0 1rem 0;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-weight: 300;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        /* Glassmorphism Upload Panel */
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+        }
+
+        /* Subtle gradient corner on the panel */
+        .glass-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(0, 206, 201, 0.2);
+            filter: blur(40px);
+            z-index: -1;
+        }
+
+        .upload-area {
+            border: 1px dashed rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            cursor: pointer;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.05);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.8;
+        }
+
+        .upload-text {
+            font-size: 1rem;
+            color: #E2E8F0;
+            font-weight: 300;
+        }
+
+        /* Image Preview Area */
+        #preview-container {
+            display: none;
+            margin-top: 1.5rem;
+        }
+
+        #image-preview {
+            max-width: 100%;
+            max-height: 350px;
+            border-radius: 12px;
+            object-fit: contain;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        /* Modern, elegant button */
+        .btn-submit {
+            display: none;
+            margin: 2rem auto 0;
+            padding: 12px 36px;
+            background: transparent;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-submit:hover {
+            background: white;
+            color: var(--bg-color);
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Result Section */
+        #result-section {
+            display: none;
+            margin-top: 3rem;
+            width: 100%;
+        }
+
+        /* Mimicking the "Proposed Solution" card styles from reference */
+        .result-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            backdrop-filter: blur(30px);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-label {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            margin: 0 0 1rem 0;
+        }
+
+        .real-text { color: var(--glow-3); text-shadow: 0 0 20px rgba(16,185,129,0.4); }
+        .fake-text { color: #EF4444; text-shadow: 0 0 20px rgba(239,68,68,0.4); }
+
+        .confidence-data {
+            font-size: 1rem;
+            font-weight: 300;
+            color: var(--text-muted);
+        }
+
+        /* Elegant Loader */
+        .loader {
+            display: none;
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="glow-orb-1"></div>
+    <div class="glow-orb-2"></div>
+
+    <div class="wrapper">
+        
+        <div class="hero">
+            <h1>Deepfake<br>Detection</h1>
+            <p class="subtitle">State-of-the-art Xception analysis with MTCNN facial extraction.</p>
+        </div>
+
+        <div class="glass-panel">
+            <div class="upload-area" id="drop-zone">
+                <span class="upload-icon">✦</span>
+                <span class="upload-text" id="upload-text">Drag & drop facial image here<br>or click to select</span>
+                <input type="file" id="file-input" accept="image/*,video/mp4,video/x-m4v,video/*">
+            </div>
+
+            <div id="preview-container">
+                <img id="image-preview" src="" alt="Selected Media" style="display: none;">
+                <video id="video-preview" controls style="display: none; max-width: 100%; max-height: 350px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);"></video>
+            </div>
+
+            <button class="btn-submit" id="analyze-btn">Initiate Analysis</button>
+            <div class="loader" id="loader"></div>
+        </div>
+
+        <div id="result-section">
+            <div class="result-card">
+                <div class="result-label">Analysis Complete</div>
+                <h2 id="prediction-text" class="result-title"></h2>
+                <div id="confidence-text" class="confidence-data"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const uploadText = document.getElementById('upload-text');
+        const previewContainer = document.getElementById('preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        
+        const loader = document.getElementById('loader');
+        const resultSection = document.getElementById('result-section');
+        const predictionText = document.getElementById('prediction-text');
+        const confidenceText = document.getElementById('confidence-text');
+
+        let selectedFile = null;
+
+        // Interaction Setup
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+                alert('Please upload a valid image or video file.');
+                return;
+            }
+            selectedFile = file;
+            uploadText.style.display = 'none';
+            previewContainer.style.display = 'block';
+            analyzeBtn.style.display = 'block';
+            resultSection.style.display = 'none';
+
+            const fileURL = URL.createObjectURL(file);
+            
+            if (file.type.startsWith('video/')) {
+                imagePreview.style.display = 'none';
+                document.getElementById('video-preview').style.display = 'block';
+                document.getElementById('video-preview').src = fileURL;
+            } else {
+                document.getElementById('video-preview').style.display = 'none';
+                imagePreview.style.display = 'block';
+                imagePreview.src = fileURL;
+            }
+        }
+
+        // Processing Logic
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            // UI Adjustments
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerText = "Processing Details...";
+            loader.style.display = 'block';
+            resultSection.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult(data.result, data.confidence);
+                } else {
+                    alert("Analysis Failed: " + data.error);
+                }
+            } catch (err) {
+                alert("Server Connection Error. Ensure the Flask engine is running.");
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerText = "Analyze Another Subject";
+                loader.style.display = 'none';
+            }
+        });
+
+        function showResult(result, confidence) {
+            resultSection.style.display = 'block';
+            predictionText.innerText = result;
+            
+            // Format styling dynamically based on result
+            if (result.includes("Real")) {
+                predictionText.className = "result-title real-text";
+            } else {
+                predictionText.className = "result-title fake-text";
+            }
+
+            confidenceText.innerHTML = `Model Confidence Metrics &mdash; <strong>${confidence}</strong> certainty.`;
+            
+            // Scroll down to result smoothly
+            setTimeout(() => {
+                resultSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    </script>
+</body>
+</html>
