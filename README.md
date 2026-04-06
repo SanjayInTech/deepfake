@@ -49,6 +49,18 @@ pip install -r requirements.txt
 python download_datasets.py
 ```
 
+### Preprocess Data
+
+```bash
+python preprocess_dataset.py
+```
+
+### Train Model
+
+```bash
+python train_model.py
+```
+
 ### Run Application
 
 ```bash
