@@ -137,9 +137,20 @@ The project uses three deepfake datasets from Kaggle:
 ### Using the Script
 
 **Step 1:** Get your Kaggle API credentials
-1. Go to [Kaggle.com](https://www.kaggle.com)
-2. Click your profile → Settings → API
-3. Click "Create New Token" to download `kaggle.json`
+
+1. **Create a Kaggle account** (if you don't have one)
+   - Go to [Kaggle.com](https://www.kaggle.com)
+   - Click "Sign Up" and register with email or Google account
+
+2. **Enable Kaggle API for your account**
+   - Go to your account settings: Click your profile picture → "Settings"
+   - Scroll down to "API" section
+   - Click "Create New Token" button
+
+3. **Download kaggle.json**
+   - This will download a file named `kaggle.json`
+   - This file contains your username and API token
+   - Keep this file secure - it gives access to your Kaggle downloads
 
 **Step 2:** Configure Kaggle credentials
 
