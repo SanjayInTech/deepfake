@@ -98,7 +98,44 @@ deepfake/
 
 ## Installation
 
-### 1. Clone the Repository
+### Option 1: Download as ZIP (Recommended if Git is not installed)
+
+If Git is not installed on your system, you can download the project as a ZIP file:
+
+1. **Go to the GitHub repository**
+   ```
+   https://github.com/SanjayInTech/deepfake
+   ```
+
+2. **Click the green "Code" button** (top right of the repository)
+
+3. **Click "Download ZIP"**
+   ```
+   deepfake-main.zip
+   ```
+
+4. **Extract the ZIP file**
+   - Right-click the downloaded ZIP
+   - Select "Extract All" or "Extract Here"
+   - Copy the extracted folder to your desired location
+
+5. **Open the extracted folder**
+   ```
+   deepfake-main/
+   ```
+
+6. **Proceed to Installation step below**
+
+---
+
+### Option 2: Clone with Git (If Git is installed)
+
+```bash
+git clone https://github.com/SanjayInTech/deepfake.git
+cd deepfake
+```
+
+---
 
 ```bash
 git clone https://github.com/SanjayInTech/deepfake.git
